@@ -4,6 +4,18 @@ use lazy_static::lazy_static;
 
 pub mod data;
 
+lazy_static! {
+    static ref GLYPH_DATA: GlyphData = GlyphData::default();
+}
+
+#[derive(Debug)]
+pub struct GlyphData {
+    by_name: HashMap<&'static str, &'static Record>,
+    by_production_name: HashMap<&'static str, &'static Record>,
+    by_alternative_name: HashMap<&'static str, &'static Record>,
+    by_unicode: HashMap<char, &'static Record>,
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Record {
     pub unicode: Option<char>,
@@ -132,53 +144,55 @@ pub enum Script {
     Yi,
 }
 
-lazy_static! {
-    static ref BY_NAME: HashMap<&'static str, &'static Record> = {
-        HashMap::from_iter(
-            data::GLYPHSINFO_RAW
-                .iter()
-                .map(|(name, record)| (*name, record)),
-        )
-    };
-    static ref BY_PRODUCTION_NAME: HashMap<&'static str, &'static Record> = {
-        HashMap::from_iter(
-            data::GLYPHSINFO_RAW
-                .iter()
-                .filter_map(|(_, record)| record.production_name.map(|name| (name, record)))
-                .map(|(name, record)| (name, record)),
-        )
-    };
-    static ref BY_ALTERNATIVE_NAME: HashMap<&'static str, &'static Record> = {
-        HashMap::from_iter(
-            data::GLYPHSINFO_RAW
-                .iter()
-                .flat_map(|(_, record)| record.alterative_names.iter().zip(std::iter::once(record)))
-                .map(|(name, record)| (*name, record)),
-        )
-    };
-    static ref BY_UNICODE: HashMap<char, &'static Record> = {
-        HashMap::from_iter(
-            data::GLYPHSINFO_RAW
-                .iter()
-                .filter_map(|(_, record)| record.unicode.map(|uv| (uv, record))),
-        )
-    };
+impl Default for GlyphData {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
-pub fn record_for_name(name: &str) -> Option<&Record> {
-    BY_NAME.get(name).copied()
-}
+impl GlyphData {
+    pub fn new() -> Self {
+        let mut by_name = HashMap::new();
+        let mut by_production_name = HashMap::new();
+        let mut by_alternative_name = HashMap::new();
+        let mut by_unicode = HashMap::new();
 
-pub fn record_for_production_name(name: &str) -> Option<&Record> {
-    BY_PRODUCTION_NAME.get(name).copied()
-}
+        for (name, record) in data::GLYPHSINFO_RAW.iter() {
+            by_name.insert(*name, record);
+            if let Some(production_name) = record.production_name {
+                by_production_name.insert(production_name, record);
+            }
+            for alternative_name in record.alterative_names.iter() {
+                by_alternative_name.insert(*alternative_name, record);
+            }
+            if let Some(unicode) = record.unicode {
+                by_unicode.insert(unicode, record);
+            }
+        }
 
-pub fn record_for_alternative_name(name: &str) -> Option<&Record> {
-    BY_ALTERNATIVE_NAME.get(name).copied()
-}
+        Self {
+            by_name,
+            by_production_name,
+            by_alternative_name,
+            by_unicode,
+        }
+    }
 
-pub fn record_for_unicode(unicode_value: char) -> Option<&'static Record> {
-    BY_UNICODE.get(&unicode_value).copied()
+    pub fn record_for_name(&self, name: &str) -> Option<&Record> {
+        self.by_name.get(name).copied()
+    }
+
+    pub fn record_for_production_name(&self, name: &str) -> Option<&Record> {
+        self.by_production_name.get(name).copied()
+    }
+
+    pub fn record_for_alternative_name(&self, name: &str) -> Option<&Record> {
+        self.by_alternative_name.get(name).copied()
+    }
+
+    pub fn record_for_unicode(&self, unicode_value: char) -> Option<&'static Record> {
+        self.by_unicode.get(&unicode_value).copied()
+    }
 }
 
 #[cfg(test)]
@@ -197,13 +211,17 @@ mod tests {
             alterative_names: &["pramMuoyLekattak-khmer"],
         };
 
-        let record = record_for_name("lekattakpramMuoy-khmer").unwrap();
+        let record = GLYPH_DATA
+            .record_for_name("lekattakpramMuoy-khmer")
+            .unwrap();
         assert_eq!(*record, expected);
-        let record = record_for_production_name("uni17F6").unwrap();
+        let record = GLYPH_DATA.record_for_production_name("uni17F6").unwrap();
         assert_eq!(*record, expected);
-        let record = record_for_alternative_name("pramMuoyLekattak-khmer").unwrap();
+        let record = GLYPH_DATA
+            .record_for_alternative_name("pramMuoyLekattak-khmer")
+            .unwrap();
         assert_eq!(*record, expected);
-        let record = record_for_unicode('\u{17F6}').unwrap();
+        let record = GLYPH_DATA.record_for_unicode('\u{17F6}').unwrap();
         assert_eq!(*record, expected);
     }
 }
