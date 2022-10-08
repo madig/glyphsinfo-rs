@@ -27,7 +27,7 @@ class Record:
     unicode: int | None
     category: str
     sub_category: str | None
-    # case: str | None
+    case: str | None
     script: str | None
     description: str
     production_name: str | None
@@ -43,10 +43,10 @@ class Record:
             sub_category = f'Some(SubCategory::{self.sub_category.replace(" ", "")})'
         else:
             sub_category = "None"
-        # if isinstance(self.case, str):
-        #     case = f'Some("{self.case}")'
-        # else:
-        #     case = "None"
+        if isinstance(self.case, str):
+            case = f'Some("{self.case}")'
+        else:
+            case = "None"
         if isinstance(self.script, str):
             script = f'Some(Script::{self.script.title().replace(" ", "")})'
         else:
@@ -64,6 +64,7 @@ class Record:
         unicode: {unicode},
         category: {category},
         sub_category: {sub_category},
+        case: {case},
         script: {script},
         description: {description},
         production_name: {production_name},
@@ -80,15 +81,15 @@ for glyphdata_file in parsed_args.glyphdata_xml:
         name = attribs["name"]
         if name in records:
             raise Exception(f"Glyph {name} has more than one entry")
-        ### TESTING ###
-        if name != "lekattakpramMuoy-khmer":
-            continue
-        ### TESTING ###
+        # ### TESTING ###
+        # if name != "lekattakpramMuoy-khmer":
+        #     continue
+        # ### TESTING ###
         records[name] = Record(
             unicode=int(attribs["unicode"], 16) if "unicode" in attribs else None,
             category=attribs["category"],
             sub_category=attribs.get("subCategory"),
-            # case=attribs.get("case"),
+            case=attribs.get("case"),
             script=attribs.get("script"),
             description=attribs.get("description"),
             production_name=attribs.get("production"),
@@ -107,3 +108,11 @@ data_file = TEMPLATE.format(
     records_length=len(records), records="\n".join(records_rust)
 )
 parsed_args.output.write_text(data_file)
+
+print("categories", {r.category for r in records.values() if r.category})
+print()
+print("sub_categories", {r.sub_category for r in records.values() if r.sub_category})
+print()
+print("cases", {r.case for r in records.values() if r.case})
+print()
+print("scripts", {r.script for r in records.values() if r.script})
