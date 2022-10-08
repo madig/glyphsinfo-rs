@@ -13,7 +13,7 @@ parser.add_argument("output", type=Path, help="The Rust source file to write.")
 parsed_args = parser.parse_args()
 
 TEMPLATE = """
-use super::Record;
+use super::{{Category, Record, Script, SubCategory}};
 
 /// Raw GlyphData.xml records. MIT-Licensed, see https://github.com/schriftgestalt/GlyphsInfo.
 pub static GLYPHSINFO_RAW: [(&str, Record); {records_length}] = [
@@ -27,7 +27,7 @@ class Record:
     unicode: int | None
     category: str
     sub_category: str | None
-    case: str | None
+    # case: str | None
     script: str | None
     description: str
     production_name: str | None
@@ -38,17 +38,17 @@ class Record:
             unicode = f"Some('\\u{{{hex(self.unicode)[2:]}}}')"
         else:
             unicode = "None"
-        category = f'"{self.category}"'
+        category = f'Category::{self.category}'
         if isinstance(self.sub_category, str):
-            sub_category = f'Some("{self.sub_category}")'
+            sub_category = f'Some(SubCategory::{self.sub_category.replace(" ", "")})'
         else:
             sub_category = "None"
-        if isinstance(self.case, str):
-            case = f'Some("{self.case}")'
-        else:
-            case = "None"
+        # if isinstance(self.case, str):
+        #     case = f'Some("{self.case}")'
+        # else:
+        #     case = "None"
         if isinstance(self.script, str):
-            script = f'Some("{self.script}")'
+            script = f'Some(Script::{self.script.title().replace(" ", "")})'
         else:
             script = "None"
         description = f'"{self.description}"'
@@ -64,7 +64,6 @@ class Record:
         unicode: {unicode},
         category: {category},
         sub_category: {sub_category},
-        case: {case},
         script: {script},
         description: {description},
         production_name: {production_name},
@@ -89,7 +88,7 @@ for glyphdata_file in parsed_args.glyphdata_xml:
             unicode=int(attribs["unicode"], 16) if "unicode" in attribs else None,
             category=attribs["category"],
             sub_category=attribs.get("subCategory"),
-            case=attribs.get("case"),
+            # case=attribs.get("case"),
             script=attribs.get("script"),
             description=attribs.get("description"),
             production_name=attribs.get("production"),
