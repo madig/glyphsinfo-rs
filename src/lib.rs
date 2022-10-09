@@ -12,7 +12,7 @@ lazy_static! {
     static ref GLYPH_DATA: GlyphData = GlyphData::default();
 }
 
-static GLYPHDATA_DATA: &[u8; 1810400] = include_bytes!("../data/glyphdata.postcard");
+static GLYPHDATA_DATA: &[u8; 2564984] = include_bytes!("../data/glyphdata.postcard");
 
 #[derive(Debug)]
 pub struct GlyphData {
@@ -95,6 +95,7 @@ fn split_xml_record(raw_record: XmlRecord) -> (String, Record) {
             case: raw_record.case,
             script: raw_record.script,
             description: raw_record.description,
+            direction: raw_record.direction,
             production_name: raw_record.production_name,
             alterative_names: raw_record.alterative_names,
         },
@@ -113,7 +114,8 @@ mod tests {
             sub_category: Some(SubCategory::DecimalDigit),
             case: None,
             script: Some(Script::Khmer),
-            description: "KHMER SYMBOL LEK ATTAK PRAM-MUOY".into(),
+            direction: None,
+            description: Some("KHMER SYMBOL LEK ATTAK PRAM-MUOY".into()),
             production_name: Some("uni17F6".into()),
             alterative_names: vec!["pramMuoyLekattak-khmer".into()],
         };

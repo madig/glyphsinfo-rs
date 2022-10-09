@@ -2,7 +2,7 @@
 use quick_xml::events::BytesStart;
 use serde::{Deserialize, Serialize};
 
-use crate::{Case, Category, Script, SubCategory};
+use crate::{Case, Category, Direction, Script, SubCategory};
 
 /// A record as it is in the upstream GlyphData.xml file.
 #[derive(Debug, Serialize, Deserialize)]
@@ -13,7 +13,8 @@ pub struct XmlRecord {
     pub sub_category: Option<SubCategory>,
     pub case: Option<Case>,
     pub script: Option<Script>,
-    pub description: String,
+    pub direction: Option<Direction>,
+    pub description: Option<String>,
     pub production_name: Option<String>,
     pub alterative_names: Vec<String>,
 }
@@ -29,7 +30,8 @@ impl TryFrom<BytesStart<'_>> for XmlRecord {
         let mut sub_category = None;
         let mut case = None;
         let mut script = None;
-        let mut description = String::new();
+        let mut direction = None;
+        let mut description = None;
         let mut production_name = None;
         let mut alterative_names = vec![];
 
@@ -54,7 +56,8 @@ impl TryFrom<BytesStart<'_>> for XmlRecord {
                     b"subCategory" => sub_category = Some(value.parse().unwrap()),
                     b"case" => case = Some(value.parse().unwrap()),
                     b"script" => script = Some(value.parse().unwrap()),
-                    b"description" => description.push_str(&value),
+                    b"direction" => direction = Some(value.parse().unwrap()),
+                    b"description" => description = Some(value.into()),
                     b"production" => production_name = Some(value.into()),
                     b"altNames" => {
                         alterative_names.extend(value.split(',').map(|s| s.trim().into()))
@@ -64,7 +67,7 @@ impl TryFrom<BytesStart<'_>> for XmlRecord {
             }
         }
 
-        if name.is_empty() || category.is_none() || description.is_empty() {
+        if name.is_empty() || category.is_none() {
             return Err("Invalid XML glyph record.");
         }
 
@@ -75,6 +78,7 @@ impl TryFrom<BytesStart<'_>> for XmlRecord {
             sub_category,
             case,
             script,
+            direction,
             description,
             production_name,
             alterative_names,

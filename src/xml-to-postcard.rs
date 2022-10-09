@@ -26,12 +26,21 @@ fn main() {
                 Ok(Event::Eof) => break,
                 Ok(Event::Empty(e)) => match e.name().as_ref() {
                     b"glyph" => {
-                        let raw_record: Option<xml::XmlRecord> = e.try_into().ok();
-                        if let Some(raw_record) = raw_record {
-                            raw_records.push(raw_record);
-                        };
+                        let raw_record: xml::XmlRecord = e.try_into().unwrap_or_else(|e| {
+                            panic!(
+                                "Could not parse glyph record in file {} at position {}: {:?}",
+                                xml_file.display(),
+                                reader.buffer_position(),
+                                e
+                            )
+                        });
+                        raw_records.push(raw_record);
                     }
-                    _ => (),
+                    _ => panic!(
+                        "Unexpected element at position {}: {:?}",
+                        reader.buffer_position(),
+                        e
+                    ),
                 },
                 _ => (),
             }

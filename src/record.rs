@@ -9,7 +9,8 @@ pub struct Record {
     pub sub_category: Option<SubCategory>,
     pub case: Option<Case>,
     pub script: Option<Script>,
-    pub description: String,
+    pub direction: Option<Direction>,
+    pub description: Option<String>,
     pub production_name: Option<String>,
     pub alterative_names: Vec<String>,
 }
@@ -146,6 +147,15 @@ pub enum Script {
     Yi,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum Direction {
+    LeftToRight,
+    RightToLeft,
+    TopToBottom,
+    BottomToTop,
+}
+
 impl FromStr for Category {
     type Err = &'static str;
 
@@ -211,6 +221,20 @@ impl FromStr for Case {
             "smallCaps" => Ok(Case::SmallCaps),
             "upper" => Ok(Case::Upper),
             _ => Err("Unknown case"),
+        }
+    }
+}
+
+impl FromStr for Direction {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "LTR" => Ok(Direction::LeftToRight),
+            "RTL" => Ok(Direction::RightToLeft),
+            "TTB" => Ok(Direction::TopToBottom),
+            "BTT" => Ok(Direction::BottomToTop),
+            _ => Err("Unknown direction"),
         }
     }
 }
