@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
-use quick_xml::{events::Event, reader::Reader};
 
 use record::*;
 use xml::XmlRecord;
@@ -13,8 +12,7 @@ lazy_static! {
     static ref GLYPH_DATA: GlyphData = GlyphData::default();
 }
 
-static XML_BASE: &[u8; 4759770] = include_bytes!("../../GlyphsInfo/GlyphData.xml");
-static XML_IDEOGRAPHS: &[u8; 2219401] = include_bytes!("../../GlyphsInfo/GlyphData_Ideographs.xml");
+static GLYPHDATA_DATA: &[u8; 1810400] = include_bytes!("../data/glyphdata.postcard");
 
 #[derive(Debug)]
 pub struct GlyphData {
@@ -27,62 +25,11 @@ pub struct GlyphData {
 
 impl Default for GlyphData {
     fn default() -> Self {
-        Self::from_xmls(&[&XML_BASE[..], &XML_IDEOGRAPHS[..]])
+        Self::from_postcard(GLYPHDATA_DATA)
     }
 }
 
 impl GlyphData {
-    pub fn from_xmls(xmls: &[&[u8]]) -> Self {
-        let mut records = Vec::new();
-        let mut by_name = HashMap::new();
-        let mut by_production_name = HashMap::new();
-        let mut by_alternative_name = HashMap::new();
-        let mut by_unicode = HashMap::new();
-
-        for xml_bytes in xmls {
-            let mut reader = Reader::from_reader(*xml_bytes);
-            reader.trim_text(true);
-            loop {
-                match reader.read_event() {
-                    Err(e) => panic!("Error at position {}: {:?}", reader.buffer_position(), e),
-                    Ok(Event::Eof) => break,
-                    Ok(Event::Empty(e)) => match e.name().as_ref() {
-                        b"glyph" => {
-                            let raw_record: Option<xml::XmlRecord> = e.try_into().ok();
-                            if let Some(raw_record) = raw_record {
-                                let (name, record) = split_xml_record(raw_record);
-
-                                let record_index = records.len();
-                                by_name.insert(name, record_index);
-                                if let Some(production_name) = &record.production_name {
-                                    by_production_name.insert(production_name.into(), record_index);
-                                }
-                                for alternative_name in record.alterative_names.iter() {
-                                    by_alternative_name
-                                        .insert(alternative_name.into(), record_index);
-                                }
-                                if let Some(unicode) = record.unicode {
-                                    by_unicode.insert(unicode, record_index);
-                                }
-                                records.push(record);
-                            };
-                        }
-                        _ => (),
-                    },
-                    _ => (),
-                }
-            }
-        }
-
-        Self {
-            records,
-            by_name,
-            by_production_name,
-            by_alternative_name,
-            by_unicode,
-        }
-    }
-
     pub fn from_postcard(content: &[u8]) -> Self {
         let raw_records: Vec<XmlRecord> = postcard::from_bytes(content).unwrap();
         let mut records = Vec::new();
@@ -113,10 +60,6 @@ impl GlyphData {
             by_alternative_name,
             by_unicode,
         }
-    }
-
-    pub fn records(&self) -> &[Record] {
-        &self.records
     }
 
     pub fn record_for_name(&self, name: &str) -> Option<&Record> {

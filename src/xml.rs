@@ -1,3 +1,4 @@
+#[cfg(feature = "read-xml")]
 use quick_xml::events::BytesStart;
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +18,7 @@ pub struct XmlRecord {
     pub alterative_names: Vec<String>,
 }
 
+#[cfg(feature = "read-xml")]
 impl TryFrom<BytesStart<'_>> for XmlRecord {
     type Error = &'static str;
 
