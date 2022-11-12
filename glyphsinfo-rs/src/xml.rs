@@ -2,7 +2,7 @@
 use quick_xml::events::BytesStart;
 use serde::{Deserialize, Serialize};
 
-use crate::{Case, Category, Direction, Script, SubCategory};
+use crate::{Case, Category, Direction, Record, Script, SubCategory};
 
 /// A record as it is in the upstream GlyphData.xml file.
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,6 +17,23 @@ pub struct XmlRecord {
     pub description: Option<String>,
     pub production_name: Option<String>,
     pub alterative_names: Vec<String>,
+}
+
+pub fn split_xml_record(raw_record: XmlRecord) -> (String, Record) {
+    (
+        raw_record.name,
+        Record {
+            unicode: raw_record.unicode,
+            category: raw_record.category,
+            sub_category: raw_record.sub_category,
+            case: raw_record.case,
+            script: raw_record.script,
+            description: raw_record.description,
+            direction: raw_record.direction,
+            production_name: raw_record.production_name,
+            alterative_names: raw_record.alterative_names,
+        },
+    )
 }
 
 #[cfg(feature = "read-xml")]

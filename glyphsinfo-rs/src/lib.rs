@@ -39,7 +39,7 @@ impl GlyphData {
         let mut by_unicode = HashMap::new();
 
         for (record_index, raw_record) in raw_records.into_iter().enumerate() {
-            let (name, record) = split_xml_record(raw_record);
+            let (name, record) = xml::split_xml_record(raw_record);
             by_name.insert(name, record_index);
             if let Some(production_name) = &record.production_name {
                 by_production_name.insert(production_name.into(), record_index);
@@ -81,23 +81,6 @@ impl GlyphData {
             .get(&unicode_value)
             .map(|i| &self.records[*i])
     }
-}
-
-fn split_xml_record(raw_record: XmlRecord) -> (String, Record) {
-    (
-        raw_record.name,
-        Record {
-            unicode: raw_record.unicode,
-            category: raw_record.category,
-            sub_category: raw_record.sub_category,
-            case: raw_record.case,
-            script: raw_record.script,
-            description: raw_record.description,
-            direction: raw_record.direction,
-            production_name: raw_record.production_name,
-            alterative_names: raw_record.alterative_names,
-        },
-    )
 }
 
 #[cfg(test)]
