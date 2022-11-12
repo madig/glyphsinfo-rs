@@ -19,22 +19,25 @@ pub struct XmlRecord {
     pub alterative_names: Vec<String>,
 }
 
-pub fn split_xml_record(raw_record: XmlRecord) -> (String, Record) {
-    (
-        raw_record.name,
-        Record {
-            unicode: raw_record.unicode,
-            category: raw_record.category,
-            sub_category: raw_record.sub_category,
-            case: raw_record.case,
-            script: raw_record.script,
-            description: raw_record.description,
-            direction: raw_record.direction,
-            production_name: raw_record.production_name,
-            alterative_names: raw_record.alterative_names,
-        },
-    )
+impl XmlRecord {
+    pub fn into_record(self) -> (String, Record) {
+        (
+            self.name,
+            Record {
+                unicode: self.unicode,
+                category: self.category,
+                sub_category: self.sub_category,
+                case: self.case,
+                script: self.script,
+                description: self.description,
+                direction: self.direction,
+                production_name: self.production_name,
+                alterative_names: self.alterative_names,
+            },
+        )
+    }
 }
+
 
 #[cfg(feature = "read-xml")]
 impl TryFrom<BytesStart<'_>> for XmlRecord {

@@ -31,15 +31,15 @@ impl Default for GlyphData {
 
 impl GlyphData {
     pub fn from_postcard(content: &[u8]) -> Self {
-        let raw_records: Vec<XmlRecord> = postcard::from_bytes(content).unwrap();
+        let xml_records: Vec<XmlRecord> = postcard::from_bytes(content).unwrap();
         let mut records = Vec::new();
         let mut by_name = HashMap::new();
         let mut by_production_name = HashMap::new();
         let mut by_alternative_name = HashMap::new();
         let mut by_unicode = HashMap::new();
 
-        for (record_index, raw_record) in raw_records.into_iter().enumerate() {
-            let (name, record) = xml::split_xml_record(raw_record);
+        for (record_index, xml_record) in xml_records.into_iter().enumerate() {
+            let (name, record) = xml_record.into_record();
             by_name.insert(name, record_index);
             if let Some(production_name) = &record.production_name {
                 by_production_name.insert(production_name.into(), record_index);
