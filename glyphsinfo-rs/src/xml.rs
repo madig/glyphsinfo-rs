@@ -36,13 +36,12 @@ impl TryFrom<BytesStart<'_>> for XmlRecord {
         let mut alterative_names = vec![];
 
         for attribute in element.attributes().filter_map(|a| a.ok()) {
-            if let Some(value) = attribute.unescape_value().ok() {
+            if let Ok(value) = attribute.unescape_value() {
                 match attribute.key.into_inner() {
                     b"unicode" => {
                         if let Some(c) = u32::from_str_radix(&value, 16)
                             .ok()
-                            .map(|i| char::try_from(i).ok())
-                            .flatten()
+                            .and_then(|i| char::try_from(i).ok())
                         {
                             unicode = Some(c);
                         }

@@ -63,25 +63,23 @@ impl GlyphData {
     }
 
     pub fn record_for_name(&self, name: &str) -> Option<&Record> {
-        self.by_name.get(name).and_then(|i| Some(&self.records[*i]))
+        self.by_name.get(name).map(|i| &self.records[*i])
     }
 
     pub fn record_for_production_name(&self, name: &str) -> Option<&Record> {
-        self.by_production_name
-            .get(name)
-            .and_then(|i| Some(&self.records[*i]))
+        self.by_production_name.get(name).map(|i| &self.records[*i])
     }
 
     pub fn record_for_alternative_name(&self, name: &str) -> Option<&Record> {
         self.by_alternative_name
             .get(name)
-            .and_then(|i| Some(&self.records[*i]))
+            .map(|i| &self.records[*i])
     }
 
     pub fn record_for_unicode(&self, unicode_value: char) -> Option<&Record> {
         self.by_unicode
             .get(&unicode_value)
-            .and_then(|i| Some(&self.records[*i]))
+            .map(|i| &self.records[*i])
     }
 }
 

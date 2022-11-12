@@ -6,7 +6,7 @@ use quick_xml::{events::Event, reader::Reader};
 use glyphsinfo_rs::*;
 
 fn main() {
-    let args: Vec<PathBuf> = std::env::args().skip(1).map(|p| PathBuf::from(p)).collect();
+    let args: Vec<PathBuf> = std::env::args().skip(1).map(PathBuf::from).collect();
     if args.len() < 2 {
         eprintln!("Must have one or more XML file paths to read and at least one output path.");
         std::process::exit(1);
