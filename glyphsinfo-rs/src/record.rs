@@ -152,8 +152,8 @@ pub enum Script {
 pub enum Direction {
     LeftToRight,
     RightToLeft,
-    TopToBottom,
-    BottomToTop,
+    TopToBottom, // XXX: The docs say something about VerticalLTR and VerticalRTL instead
+    BottomToTop, // XXX: The docs say something about VerticalLTR and VerticalRTL instead
 }
 
 impl FromStr for Category {

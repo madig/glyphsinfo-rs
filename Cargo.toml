@@ -1,26 +1,5 @@
-[package]
-name = "glyphsinfo-rs"
-version = "0.1.0"
-license = "MIT"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-lazy_static = "1.4"
-postcard = { version = "1", default-features = false }
-serde = "1"
-
-[dependencies.quick-xml]
-version = "0.25.0"
-optional = true
-
-[features]
-default = []
-read-xml = ["quick-xml"]
-write-postcard = ["postcard/use-std"]
-
-[[bin]]
-name = "xml-to-postcard"
-path = "src/xml-to-postcard.rs"
-required-features = ["read-xml", "write-postcard"]
+[workspace]
+members = [
+    "glyphsinfo-rs",
+    "xml-to-postcard",
+]

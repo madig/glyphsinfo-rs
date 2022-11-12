@@ -1,0 +1,13 @@
+[package]
+name = "xml-to-postcard"
+version = "0.1.0"
+license = "MIT"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glyphsinfo-rs = { path = "../glyphsinfo-rs", features = ["read-xml"] }
+postcard = { version = "1", features = ["use-std"] }
+serde = "1"
+quick-xml = "0.26"
