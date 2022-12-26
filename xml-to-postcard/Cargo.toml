@@ -7,6 +7,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-glyphsinfo-rs = { path = "../glyphsinfo-rs", features = ["read-xml"] }
+glyphsinfo-rs = { path = "../glyphsinfo-rs" }
 postcard = { version = "1", features = ["use-std"] }
-quick-xml = "0.26"
