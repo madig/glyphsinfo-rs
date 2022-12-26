@@ -3,18 +3,20 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 use record::*;
-use xml::XmlRecord;
+use serde::{Deserialize, Serialize};
+use xml::XmlGlyphData;
 
 pub mod record;
 pub mod xml;
 
+// TODO: Try https://crates.io/crates/databake?
 lazy_static! {
     static ref GLYPH_DATA: GlyphData = GlyphData::default();
 }
 
-static GLYPHDATA_DATA: &[u8; 2564984] = include_bytes!("data/glyphdata.postcard");
+static GLYPHDATA_POSTCARD_DATA: &[u8; 3496254] = include_bytes!("data/glyphdata.postcard");
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct GlyphData {
     records: Vec<Record>,
     by_name: HashMap<String, usize>,
@@ -25,32 +27,41 @@ pub struct GlyphData {
 
 impl Default for GlyphData {
     fn default() -> Self {
-        Self::from_postcard(GLYPHDATA_DATA)
+        Self::from_postcard(GLYPHDATA_POSTCARD_DATA)
     }
 }
 
 impl GlyphData {
     pub fn from_postcard(content: &[u8]) -> Self {
-        let xml_records: Vec<XmlRecord> = postcard::from_bytes(content).unwrap();
+        postcard::from_bytes(content).unwrap()
+    }
+
+    pub fn from_xml(xml_strs: &[&str]) -> Self {
         let mut records = Vec::new();
         let mut by_name = HashMap::new();
         let mut by_production_name = HashMap::new();
         let mut by_alternative_name = HashMap::new();
         let mut by_unicode = HashMap::new();
 
-        for (record_index, xml_record) in xml_records.into_iter().enumerate() {
-            let (name, record) = xml_record.into_record();
-            by_name.insert(name, record_index);
-            if let Some(production_name) = &record.production_name {
-                by_production_name.insert(production_name.into(), record_index);
+        for xml_str in xml_strs {
+            let glyph_data: XmlGlyphData = quick_xml::de::from_str(*xml_str).unwrap();
+            for (record_index, xml_record) in glyph_data.glyph.into_iter().enumerate() {
+                let (name, record) = xml_record.into_record();
+                if by_name.contains_key(&name) {
+                    panic!("Duplicate record for {name} found.")
+                };
+                by_name.insert(name, record_index);
+                if let Some(production_name) = &record.production_name {
+                    by_production_name.insert(production_name.into(), record_index);
+                }
+                for alternative_name in record.alterative_names.iter() {
+                    by_alternative_name.insert(alternative_name.into(), record_index);
+                }
+                if let Some(unicode) = record.unicode {
+                    by_unicode.insert(unicode, record_index);
+                }
+                records.push(record);
             }
-            for alternative_name in record.alterative_names.iter() {
-                by_alternative_name.insert(alternative_name.into(), record_index);
-            }
-            if let Some(unicode) = record.unicode {
-                by_unicode.insert(unicode, record_index);
-            }
-            records.push(record);
         }
 
         Self {
