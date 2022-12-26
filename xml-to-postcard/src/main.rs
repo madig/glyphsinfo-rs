@@ -1,7 +1,5 @@
 use std::path::PathBuf;
 
-use postcard::to_allocvec;
-
 use glyphsinfo_rs::GlyphData;
 
 fn main() {
@@ -22,6 +20,6 @@ fn main() {
     let xmls: Vec<&str> = xml_contents.iter().map(|s| s.as_ref()).collect();
     let glyph_data = GlyphData::from_xml(&xmls);
 
-    let bytes = to_allocvec(&glyph_data).unwrap();
+    let bytes = postcard::to_allocvec(&glyph_data).unwrap();
     std::fs::write(output_file, bytes).unwrap();
 }
