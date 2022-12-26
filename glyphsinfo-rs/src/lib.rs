@@ -14,7 +14,7 @@ lazy_static! {
     static ref GLYPH_DATA: GlyphData = GlyphData::default();
 }
 
-static GLYPHDATA_POSTCARD_DATA: &[u8; 3496254] = include_bytes!("data/glyphdata.postcard");
+static GLYPHDATA_POSTCARD_DATA: &[u8; 3494378] = include_bytes!("data/glyphdata.postcard");
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GlyphData {

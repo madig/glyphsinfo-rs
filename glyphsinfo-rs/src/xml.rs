@@ -30,7 +30,7 @@ pub struct XmlRecord {
     pub description: Option<String>,
     #[serde(rename = "@production")]
     pub production_name: Option<String>,
-    #[serde(rename = "@altNames", default)]
+    #[serde(rename = "@altNames", deserialize_with = "split_string", default)]
     pub alterative_names: Vec<String>,
 }
 
@@ -61,4 +61,13 @@ where
     let char = char::try_from(u32::from_str_radix(value, 16).map_err(serde::de::Error::custom)?)
         .map_err(serde::de::Error::custom)?;
     Ok(Some(char))
+}
+
+fn split_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: &str = Deserialize::deserialize(deserializer)?;
+    let names: Vec<String> = value.split(',').map(|s| s.trim().into()).collect();
+    Ok(names)
 }
